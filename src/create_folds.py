@@ -15,7 +15,6 @@ def create_folds(n_folds = 5):
         train_df.loc[val_indices, 'kfold'] = fold
     
     train_df.to_csv('../input/tweet-sentiment-extraction/train_folds.csv')
-    print("Is it done?")
 
 if __name__ == "__main__":
     create_folds(5)
