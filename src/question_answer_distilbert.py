@@ -68,14 +68,16 @@ def generate_testing_data_in_json(test_np_arr):
     output = []
     for each_row in test_np_arr:
         ctxt = each_row[1]
-        row_id = each_row[0]
         question = each_row[2]
-        answer = [{'text' : '' , 'answer_start' : -1}]
-        question_and_answer = [{'id' : row_id, 'is_impossible' : False, 'question' : question , 'answers' : answer}]
+        question_and_answer = [{'question' : question, 'id' : each_row[0]}]
         output.append({'context' : ctxt, 'qas' : question_and_answer})
 
     with open('../data/test.json', 'w') as output_file:
         json.dump(output, output_file)
+    return output
+
+#def version_testing_data_in_json(test_np_arr):
+
 
 def train():
     model = QuestionAnsweringModel('distilbert', 
@@ -92,8 +94,16 @@ def train():
                               use_cuda=True)
     model.train_model('../data/train.json')
 
-def test():
+def test(sub_df, test_array):
     logging.info("Testing")
+    # Load the saved model.
+    model = QuestionAnsweringModel('distilbert', 'outputs/', args={})
+    predictions = model.predict(test_array)
+    predictions_df = pd.DataFrame.from_dict(predictions)
+    sub_df['selected_text'] = predictions_df['answer']
+    sub_df.to_csv('submission.csv', index=False)
+    print("sub file created")
+
 
 
 def main(): 
@@ -110,8 +120,9 @@ def main():
 
 
     #generate_training_data_in_json(train_array)
-    #generate_testing_data_in_json(test_array)
-    train()   
+    #test_list = generate_testing_data_in_json(test_array)
+    #train()
+    test(sub_df, test_list)   
 
 if __name__ == "__main__":
     main()
