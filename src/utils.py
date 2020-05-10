@@ -1,4 +1,9 @@
 # Write the validation functions over here.. error functions.
+import tokenizers
+import urllib
+import os
+from transformers import AutoTokenizer
+
 def download_vocab_files_for_tokenizer(tokenizer, model_type, output_path):
     '''
     This is used to download some of the vocab files and merges file for tokenizers.
