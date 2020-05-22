@@ -27,6 +27,7 @@ class RoBERTaConfig:
     ROBERTA_PATH="../input/roberta-base/"
     MODEL_PATH='model.bin'
     TRAINING_FILE='../input/tweet-sentiment-extraction/train_folds.csv'
+    PREPROCESS_TEXT = False
     TOKENIZER=tokenizers.ByteLevelBPETokenizer(
         vocab_file=f"{ROBERTA_PATH}/roberta-base-vocab.json",
         merges_file=f"{ROBERTA_PATH}/roberta-base-merges.txt",
