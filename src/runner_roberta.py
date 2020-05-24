@@ -216,7 +216,7 @@ def main(fold):
     for epoch in range(RoBERTaConfig.EPOCHS):
         train(train_dataloader, model, optimizer, device, scheduler)
         jaccard = validation(valid_dataloader, model, device)
-        early_stopping(jaccard, model, f'{RoBERTaConfig.ROBERTA_PATH}model_{fold}.bin')
+        early_stopping(jaccard, model, f'{RoBERTaConfig.ROBERTA_PATH}model_conv_head_with_leaky_relu_{fold}.bin')
         if early_stopping.early_stop:
             print("No improvement in the validation score, stopping training.")
     

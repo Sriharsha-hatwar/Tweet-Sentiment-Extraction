@@ -2,12 +2,26 @@
 import os
 import numpy as np
 import urllib
-
+import math
 import torch
 import tokenizers
 import torch.nn as nn
 from transformers import AutoTokenizer
 
+
+class Conv1dSame(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, dilation=1):
+        super().__init__()
+        self.cut_last_element = (kernel_size % 2 == 0 and stride == 1 and dilation % 2 == 1)
+        self.padding = math.ceil((1 - stride + dilation * (kernel_size-1))/2)
+        self.conv = nn.Conv1d(in_channels, out_channels, kernel_size, padding=self.padding, stride=stride, dilation=dilation)
+
+    def forward(self, x):
+        if self.cut_last_element:
+            return self.conv(x)[:, :, :-1]
+        else:
+            return self.conv(x)
+            3
 
 def download_vocab_files_for_tokenizer(tokenizer, model_type, output_path):
     '''
@@ -261,18 +275,8 @@ def preprocess_roberta(tweet_main_text, selected_text, sentiment, tokenizer, max
     }
     
 if __name__ == "__main__":
-    print("All is well")
-    
-    tok_bert = tokenizers.BertWordPieceTokenizer(
-        f"../input/bert-base-uncased/vocab.txt",
-        lowercase=True
-    )
-
-    tok_roberta=tokenizers.ByteLevelBPETokenizer(
-        vocab_file=f"../input/roberta-base/roberta-base-vocab.json",
-        merges_file=f"../input/roberta-base/roberta-base-merges.txt",
-        lowercase=True,
-        add_prefix_space=True
-    )
-    #preprocess_roberta("Sooo SAD I will miss you here in San Diego!!!", "Sooo SAD", "negative", tok_roberta , 96)
-    preprocess_roberta("Sooo SAD I will miss you here in San Diego!!!", "Sooo SAD", "negative", tok_roberta , 96)
+    input_a = torch.randn(16, 192, 768)
+    input_a_t = input_a.transpose(1,2)
+    m = Conv1dSame(768, 128, 2)
+    out = m(input_a_t)
+    print(out.shape)
