@@ -1,0 +1,251 @@
+IMPORTANT : things to do ebfore experiment : 
+1. Change the model name!!!! in the Early stopping one.
+2. Change the load_state_dict wala one as well.
+3. Change the submission excel sheet name.
+
+0.7157714449623919 -> was my CV score - > How??? and 0.710 was the LB score.
+     0.7146947066058379 -> with a two conv head. But has terribly overfit  LB score : 0.700 :(
+     0.715 ~ around CV and LB : 0.708 -> After adding leaky relu between conv layers
+     Currently testing with the newly created folds using stratified sampling. -> 0.706 CV and 0.703 LB
+
+    I am guessing the reason for the above things to fail is due to fact that dropout was a bit high?
+
+     Experiments to be conducted : 
+     1. Using all the 4 layers contextual embedding.
+     2. Use Batch Norm. 
+     3. Try to repro the maximum giving LB score without the Convh head or so.
+
+     1. Using all the top 4 layers of contextual embeddings : () 
+        removed the conv head. just the vanilla one. 
+        Scores : CV : 0.7072537313775789 
+        please check the LB : 0.701
+
+        a. Trying with fold 3 
+        b. trying with fold 4
+        c. trying with fold 1
+        d. tryinf with fold 0
+    2 Lets try with a dropout of 0.1 : 
+        Scores CV : 0.7091303865612899
+        please check the LB : 0.705
+        a. Trying with fold 3 
+        b. trying with fold 4
+        c. trying with fold 1
+        d. tryinf with fold 0
+        
+    3 Will add the conv heads now. (CV strategy still abhishek's)
+        Using a diff scheduled?, will raise the epoch to 7 and LR a little lesser.
+        OOOOOF overfitting very badly.
+        Score CV : 0.7032006219785927
+        LB : NOt scored , score with model_outer_2_layer_dropout_abhishek_cv{fold}
+
+    4. Using just two contextual embedding. with dropout 0.1
+        Submission : submission_6_abhsihek_cv.csv
+        CV : 0.7080609892674663
+        LB : 0.701
+
+    4. Added lovascz loss:
+    very similar results 0.707 and 0.708 CV and LB
+
+Major change :
+1.    
+    Changed the weight decay, 0.001 to 0.1
+    Changing batch_size to 16.
+    Changing the epochs to 5 itself
+    Changed the learning rate to 1e-5
+    Reverted to CrossEntropy loss function.
+    Doing five folds training.
+    CV : 
+    0th fold -> 0.71662861912458
+    1st fold ->  0.707095787647992
+    2nd fold -> 0.7084792345547317
+    3rd fold ->   0.7041353415662625)
+    4th fold -> 0.7063827899959508
+    CV -> 0.70844
+    LB -> 0.711
+    No conv heads.
+    Using only last two outputs from roberta.
+    No postprocessing
+    No preprocessing.
+
+2. Lets change the loss function and train the same in kaggle notebook :
+    Changed the weight decay, 0.001 to 0.1
+    Changing batch_size to 16.
+    Changing the epochs to 5 itself
+    Changed the learning rate to 1e-5
+    Doing five folds training.
+    CV : 
+    0th fold -> 
+    1st fold ->  
+    2nd fold -> 
+    3rd fold ->   
+    4th fold -> 
+    CV -> 
+    LB -> BAD around 0.708
+    No conv heads.
+    Using only last two outputs from roberta.
+    No postprocessing
+    No preprocessing.
+3. Utilizing all the output heads and training locally :
+    Changed the weight decay, 0.001 to 0.1
+    Changing batch_size to 16.
+    Changing the epochs to 5 itself
+    Changed the learning rate to 1e-5
+    Reverted to CrossEntropy loss function.
+    Doing five folds training.
+    0th fold -> 0.7129637899726521
+    1st fold ->   0.7061389796920293
+    2nd fold ->  0.7067724518099952
+    3rd fold ->    0.707887021235332
+    4th fold ->  0.710764714803786
+    CV -> 0.7089
+    LB -> 0.711.
+    No conv heads.
+    Using only last FOUR outputs from roberta.
+    No postprocessing
+    No preprocessing.
+----------------------------------------------------------------------------------------------
+4. Using conv heads after roberta. (Run in notebooks) :  
+    Changed the weight decay, 0.001 to 0.1
+    Changing batch_size to 16.
+    Changing the epochs to 5 itself
+    Changed the learning rate to 2e-5
+    Reverted to CrossEntropy loss function.
+    Doing five folds training.
+    CV : 
+    0th fold -> 
+    1st fold ->  
+    2nd fold -> 
+    3rd fold ->   
+    4th fold -> 
+    CV -> 
+    LB -> 0.715 (Need to once again run in the local machine)
+    Using conv heads
+    Using only last one outputs from roberta.
+    No postprocessing
+    No preprocessing.
+----------------------------------------------------------------------------------------------
+5. Using conv heads after roberta. (Run in notebooks) : -> Running in notebooks now,
+    The CV loss and Jaccard are vert bad with this loss.
+    Changed the weight decay, 0.001 to 0.1
+    Changing batch_size to 16.
+    Changing the epochs to 5 itself
+    Changed the learning rate to 2e-5
+    Using Lovascz hinge loss
+    Doing five folds training.
+    CV : 
+    0th fold -> 
+    1st fold ->  
+    2nd fold -> 
+    3rd fold ->   
+    4th fold -> 
+    CV -> 
+    LB -> Will be bad. Discarding.
+    Using conv heads
+    Using only last one outputs from roberta.
+    No postprocessing
+    No preprocessing.
+
+6. Using conv heads after roberta. (Run in notebooks) : -> Running locally now.(HOPELESS)
+    Changed the weight decay, 0.001 to 0.1
+    Changing batch_size to 16.
+    Changing the epochs to 7 itself
+    Changed the learning rate to 1.5e-5
+    Using Lovascz hinge loss
+    Doing five folds training.
+    CV : 
+    0th fold -> 
+    1st fold ->  
+    2nd fold -> 
+    3rd fold ->   
+    4th fold -> 
+    CV -> 
+    LB -> 
+    Using conv heads
+    Using only last one outputs from roberta.
+    No postprocessing
+    No preprocessing.
+    decreased the dropout to 0.1
+
+7. Using conv heads after roberta. (Run in notebooks) : -> Running locally now.
+    Changed the weight decay, 0.001 to 0.1
+    Changing batch_size to 16.
+    Changing the epochs to 7 itself
+    Changed the learning rate to 3.5e-5
+    Using Lovascz hinge loss
+    Doing five folds training.
+    CV : 
+    0th fold -> 
+    1st fold ->  
+    2nd fold -> 
+    3rd fold ->   
+    4th fold -> 
+    CV -> 
+    LB -> 
+    Using conv heads
+    Using only last one outputs from roberta.
+    No postprocessing
+    No preprocessing.
+    decreased the dropout to 0.1
+    WARMUP_RATIO = 0.3
+    Conclusion bad.
+8. Trying BERT 5 folds with similar architecture as experiment 4.
+    With little modification in the code.
+    Changed the weight decay, 0.001 to 0.1
+    Changing batch_size to 16.
+    Changing the epochs to 4 
+    Changed the learning rate to 1.75e-5
+    Reverted to CrossEntropy loss function.
+    Doing five folds training.
+    CV : 
+    0th fold -> 
+    1st fold ->  
+    2nd fold -> 
+    3rd fold ->   
+    4th fold -> 
+    CV -> 
+    LB -> 
+    Using conv heads
+    Using only last one outputs from roberta.
+    No postprocessing
+    No preprocessing.
+    NEED TO WRITE THE INFERENCE KERNEL
+9. Using conv heads after roberta. (Run LOCALLY) :  
+    Changed the weight decay, 0.001 to 0.1
+    Changing batch_size to 16.
+    Changing the epochs to 5 itself
+    Changed the learning rate to 2e-5
+    Reverted to CrossEntropy loss function.
+    Doing five folds training.
+    CV : 
+    0th fold -> 0.7137823490062094
+    1st fold ->   0.7075970543382313
+    2nd fold ->  0.7068690688355692
+    3rd fold ->    0.7074347517635163
+    4th fold ->  0.7074255155357356
+    CV -> 0.708
+    LB ->  0.712
+    Using conv heads 
+    Using last Two outputs from roberta.
+    No postprocessing
+    No preprocessing.
+10. Using conv heads after roberta. (Run in notebooks) :  
+    Changed the weight decay, 0.001 to 0.1
+    Changing batch_size to 16.
+    Changing the epochs to 5 itself
+    Changed the learning rate to 2e-5
+    Reverted to CrossEntropy loss function.
+    Doing five folds training.
+    CV : 
+    0th fold -> 
+    1st fold ->  
+    2nd fold -> 
+    3rd fold ->   
+    4th fold -> 
+    CV -> 
+    LB -> 
+    Using conv heads
+    Using only last one outputs from roberta.
+    No postprocessing
+    No preprocessing.
+    Using the whole of softmax and not just start and end seperate.
+

@@ -186,7 +186,7 @@ def main(fold):
     valid_dataloader = torch.utils.data.DataLoader(
         validation_tweet_dataset,
         batch_size=RoBERTaConfig.VALID_BATCH_SIZE,
-        shuffle=True,
+        shuffle=False,
         num_workers=0,
         pin_memory=True
     )
@@ -203,10 +203,10 @@ def main(fold):
     param_optimizer = model.named_parameters()
     optimizer_parameters = utils.get_weight_decay_parameters(param_optimizer, no_weight_decay)
 
-    optimizer = transformers.AdamW(optimizer_parameters, lr = 3e-5)
+    optimizer = transformers.AdamW(optimizer_parameters, lr = 2e-5)
     scheduler = transformers.get_linear_schedule_with_warmup(
         optimizer, 
-        num_warmup_steps = 0,
+        num_warmup_steps = int(RoBERTaConfig.WARMUP_RATIO * num_training_steps),
         num_training_steps=num_training_steps
     )
     early_stopping = utils.EarlyStopping(patience = 2, mode = 'max')
@@ -216,10 +216,20 @@ def main(fold):
     for epoch in range(RoBERTaConfig.EPOCHS):
         train(train_dataloader, model, optimizer, device, scheduler)
         jaccard = validation(valid_dataloader, model, device)
-        early_stopping(jaccard, model, f'{RoBERTaConfig.ROBERTA_PATH}model_conv_head_with_leaky_relu_{fold}.bin')
+        early_stopping(jaccard, model, f'{RoBERTaConfig.ROBERTA_PATH}model_roberta_cnn_two_hidden_{fold}.bin')
         if early_stopping.early_stop:
             print("No improvement in the validation score, stopping training.")
     
 
 if __name__ == "__main__":
+    main(0)
+    print("First fold done.")
+    main(1)
+    print("Second fold done.")
     main(2)
+    print("Third fold done.")
+    main(3)
+    print("Fourth fold done.")
+    main(4)
+    print("Fifth fold done.")
+

@@ -7,6 +7,7 @@ import torch
 import tokenizers
 import torch.nn as nn
 from transformers import AutoTokenizer
+from postprocessing import lovasz_hinge
 
 
 class Conv1dSame(nn.Module):
@@ -21,7 +22,6 @@ class Conv1dSame(nn.Module):
             return self.conv(x)[:, :, :-1]
         else:
             return self.conv(x)
-            3
 
 def download_vocab_files_for_tokenizer(tokenizer, model_type, output_path):
     '''
@@ -49,6 +49,19 @@ def loss_fn(start_logits, end_logits, start_position, ending_position):
     start_loss = cross_entropy_function(start_logits, start_position)
     end_loss = cross_entropy_function(end_logits, ending_position)
     return start_loss + end_loss
+
+def hinge_loss_wrapper(start_logits, end_logits, start_position, ending_position):
+    device = torch.device("cuda")
+    token_dim = start_logits.shape[1]
+    batch_size = start_logits.shape[0]
+    start_position = start_position.reshape(batch_size, 1)
+    ending_position = ending_position.reshape(batch_size, 1)
+    one_hot_start_positions = (start_position == torch.arange(token_dim).reshape(1, token_dim).to(device)).float()
+    one_hot_end_positions = (ending_position == torch.arange(token_dim).reshape(1, token_dim).to(device)).float()
+    #start_logits.to(device)
+    #end_logits.to(device)
+    #print(one_hot_end_positions.shape)
+    return lovasz_hinge(start_logits, one_hot_start_positions) + lovasz_hinge(end_logits, one_hot_end_positions)
 
 def jaccard(str1, str2): 
     a = set(str1.lower().split()) 
@@ -141,7 +154,7 @@ def get_weight_decay_parameters(param_optimizer, no_weight_decay):
         if not found_entity:
             weight_decay_params.append(parameters)
 
-    return [{'params' : weight_decay_params, 'weight_decay' : 0.001 } , {'params' : non_weight_decay_params, 'weight_decay' : 0 }]  
+    return [{'params' : weight_decay_params, 'weight_decay' : 0.1 } , {'params' : non_weight_decay_params, 'weight_decay' : 0 }]  
 
 def preprocess_bert(tweet_main_text, selected_text, sentiment, tokenizer, max_len):
     # Finding the starting point and ending point of the selected_text
@@ -274,9 +287,23 @@ def preprocess_roberta(tweet_main_text, selected_text, sentiment, tokenizer, max
         'target_end' : target_token_end    
     }
     
+def get_best_start_end_idxs(start_logits, end_logits):
+    max_len = len(start_logits)
+    print(max_len)
+    a = np.tile(start_logits, (max_len, 1))
+    b = np.tile(end_logits, (max_len, 1))
+    c = np.tril(a + b.T, k=0).T
+    c[c == 0] = -1000
+    return np.unravel_index(c.argmax(), c.shape)
+
+
 if __name__ == "__main__":
-    input_a = torch.randn(16, 192, 768)
-    input_a_t = input_a.transpose(1,2)
-    m = Conv1dSame(768, 128, 2)
-    out = m(input_a_t)
-    print(out.shape)
+    #input_a = torch.randn(16, 192, 768)
+    #input_a_t = input_a.transpose(1,2)
+    #m = Conv1dSame(768, 128, 2)
+    #out = m(input_a_t)
+    #print(out.shape)
+    a = [1, 2, 4, 7, 8, 4, 4, 5]
+    b = [3,4,5,1,2,3,7,8]
+    print(get_best_start_end_idxs(a,b))
+
