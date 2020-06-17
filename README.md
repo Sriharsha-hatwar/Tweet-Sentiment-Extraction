@@ -1,5 +1,5 @@
 # Tweet-Sentiment-Extraction
-Ongoing competition in Kaggle.  
+This was a competetion in kaggle. 
 
 *Important notice* : This is not a naive sentiment prediction task of tweets. This system extracts the sentiment causing context words from a tweet by modelling this as a Question Answering task.
 
